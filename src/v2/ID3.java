@@ -15,29 +15,19 @@ public class ID3 {
  
     // table des faits
     public Line[] facts;
+    public Tree tree;
+    public Cell[] cellAvailable = {Cell.Empty, Cell.Player, Cell.Smell, Cell.Unknown, Cell.Wind};
     
     
     public ID3(Line[] facts){
         this.facts = facts;
-        CalculateTotalEnthropy();
-        float[] gains = CalculateGains(facts);
-        int bestGain = PickBestGain(gains);
-        
-        Node node = new Node(bestGain, true);
-
-        
-        
-        
-        /*
-        for(int i = 0; i < facts[i].surroundings.length; i++){
-            if(i != bestGain){
-                node.addNeighbor(new Node(i));
-            }
-        }
-        */
+        CreateTree();
     }
     
     
+    private CreateTree(){
+        
+    }
     
     
     private float[] CalculateGains(Line[] lines){
