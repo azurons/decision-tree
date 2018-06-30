@@ -11,7 +11,7 @@ public class Property {
     private int index;
     private ArrayList<Attribute> attributes = new ArrayList<>();
 
-    public Property(int index, String name){
+    public Property(String name, int index){
         this.index = index;
         this.name = name;
     }
@@ -22,5 +22,9 @@ public class Property {
 
     public ArrayList<Attribute> getAttributes(){
         return attributes;
+    }
+
+    public int getIndex(){
+        return index;
     }
 }

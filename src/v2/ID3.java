@@ -8,6 +8,7 @@ package v2;
 import javafx.util.Pair;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 /**
  *
@@ -38,10 +39,47 @@ public class ID3 {
         int index = PickBestGain(gains);
 
         Property prop = new Property(propertyAvailable[index], index);
-        for(var i = 0; i < cellAvailable.length; i++){
-            prop.addAttribute(new Attribute(cellAvailable[i], prop));
+        for(int i = 0; i < cellAvailable.length; i++){
+            prop.addAttribute(new Attribute(cellAvailable[i].toString(), prop));
         }
+
         tree = new Tree(prop);
+        
+        CalculateStateOfAttribute(prop);
+    }
+
+
+    private void CalculateStateOfAttribute(Property prop){
+        ArrayList<Attribute> attrs = prop.getAttributes();
+        for(int i = 0; i < attrs.size(); i++){
+            ArrayList<Line> facts = new ArrayList<>();
+
+            for(int j = 0; j < totalFacts.length; j++){
+                Line line = totalFacts[j];
+                if(line.surroundings[prop.getIndex()].toString().equals(attrs.get(i).getName())){
+                    facts.add(line);
+                }
+            }
+            
+            Boolean fullDeath = true;
+            Boolean fullSurvive = true;
+            for(int j = 0; j < facts.size(); j++){
+                if(facts.get(j).death){
+                    fullSurvive = false;
+                }else {
+                    fullDeath = false;
+                }
+            }
+
+            if(fullDeath){
+                attrs.get(i).setEnd(false);
+            }else if(fullSurvive){
+                attrs.get(i).setEnd(true);
+            }
+
+            //to finish
+            //ta l'es facts.
+        }
     }
 
     private float CalculateGainforProperty(int index, Cell[] fields, Line[] facts, float mainEnthropie){
@@ -150,8 +188,8 @@ public class ID3 {
             }
         }
         
-        float ratioSurvive = numberSurvive / facts.length;
-        float ratioDeath = numberDeath / facts.length; 
+        float ratioSurvive = numberSurvive / lines.length;
+        float ratioDeath = numberDeath / lines.length;
 
         
         return -ratioSurvive*log2(ratioSurvive) - ratioDeath*log2(ratioDeath);

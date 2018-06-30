@@ -8,6 +8,8 @@ public class Attribute {
     private Property mainProperty;
     private Property connectedProperty;
     private String name;
+    private Boolean isEnd = false;
+    private Boolean survive = false;
 
     public Attribute(String name, Property mainProperty){
         this.name = name;
@@ -26,5 +28,14 @@ public class Attribute {
 
     public Property getTarget(){
         return connectedProperty;
+    }
+    
+    public String getName(){
+        return name;
+    }
+
+    public void setEnd(Boolean survive){
+        this.survive = survive;
+        this.isEnd = true;
     }
 }
