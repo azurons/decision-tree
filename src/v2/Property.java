@@ -8,9 +8,11 @@ import java.util.ArrayList;
 public class Property {
 
     private String name;
+    private int index;
     private ArrayList<Attribute> attributes = new ArrayList<>();
 
-    public Property(String name){
+    public Property(int index, String name){
+        this.index = index;
         this.name = name;
     }
 

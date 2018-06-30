@@ -5,9 +5,11 @@ package v2;
  */
 public class Tree {
 
-    public Attribute rootAttribute;
+    public Property rootProperty;
 
-    public Tree(Attribute attr){
-        rootAttribute = attr;
+    public Tree(Property prop){
+        rootProperty = prop;
     }
+
+
 }

@@ -5,6 +5,8 @@
  */
 package v2;
 
+import javafx.util.Pair;
+
 import java.math.BigDecimal;
 
 /**
@@ -14,22 +16,57 @@ import java.math.BigDecimal;
 public class ID3 {
  
     // table des faits
-    public Line[] facts;
+    public Line[] totalFacts;
     public Tree tree;
     public Cell[] cellAvailable = {Cell.Empty, Cell.Player, Cell.Smell, Cell.Unknown, Cell.Wind};
+    public String[] propertyAvailable = {"up", "right", "bottom", "left"};
     
-    
-    public ID3(Line[] facts){
-        this.facts = facts;
+    public ID3(Line[] totalFacts){
+        this.totalFacts = totalFacts;
         CreateTree();
     }
     
     
-    private CreateTree(){
+    private void CreateTree(){
         
+        float[] gains = new float[totalFacts[0].surroundings.length];
+        float mainEntropy = CalculateEnthropy(totalFacts);
+        for(int i = 0; i < totalFacts[0].surroundings.length;i++){
+            gains[i] = CalculateGainforProperty(i, cellAvailable, totalFacts, mainEntropy);
+        }
+
+        int index = PickBestGain(gains);
+
+        Property prop = new Property(propertyAvailable[index], index);
+        for(var i = 0; i < cellAvailable.length; i++){
+            prop.addAttribute(new Attribute(cellAvailable[i], prop));
+        }
+        tree = new Tree(prop);
+    }
+
+    private float CalculateGainforProperty(int index, Cell[] fields, Line[] facts, float mainEnthropie){
+        float[] enthropy = new float[fields.length];
+        float[] prevalence = new float[fields.length];
+        for(int i = 0; i < fields.length; i++){
+            Pair<Float, Float> pair =  CalculateEnthropyForField(index, fields[i], facts);
+            enthropy[i] = pair.getKey();
+            prevalence[i] =  pair.getValue();
+
+        }
+        float gain = ComputeGain(index, mainEnthropie, enthropy, prevalence, facts.length);
+        return gain;
+    }
+
+    private float ComputeGain(int index, float mainEntropy, float[] entropy, float[] prevalence, float factsSize){
+        float gain = mainEntropy;
+        for(int i = 0; i < entropy.length; i++){
+            gain -= ((prevalence[i]/factsSize)*entropy[i]);
+        }
+
+        return gain;
     }
     
-    
+    /*
     private float[] CalculateGains(Line[] lines){
         
         float[] gains = new float[4];
@@ -71,9 +108,10 @@ public class ID3 {
         }
         
         return gains;
-   }
-    
-    private Float CalculateEnthropyForField(int index, Cell cell){
+   }*/
+
+
+    private Pair<Float, Float> CalculateEnthropyForField(int index, Cell cell, Line[] facts){
         float probabilityCell = 0;
         float numberDeath = 0;
         float numberSurvive = 0;
@@ -92,7 +130,7 @@ public class ID3 {
         float ratioSurvive = numberSurvive / probabilityCell;
         float ratioDeath = numberDeath / probabilityCell; 
         
-        return -ratioDeath*log2(ratioDeath) - ratioSurvive*log2(ratioSurvive);
+        return new Pair<Float, Float>(-ratioDeath*log2(ratioDeath) - ratioSurvive*log2(ratioSurvive), probabilityCell);
     }
     
 
