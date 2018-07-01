@@ -26,6 +26,7 @@ public class ID3 {
     public ID3(Line[] totalFacts){
         this.totalFacts = totalFacts;
         CreateTree();
+        System.out.println(tree);
     }
     
     
@@ -189,8 +190,8 @@ public class ID3 {
             }
         }
         
-        float ratioSurvive = numberSurvive / probabilityCell;
-        float ratioDeath = numberDeath / probabilityCell; 
+        float ratioSurvive = probabilityCell != 0 ? numberSurvive / probabilityCell : 0;//pour éviter les NaN
+        float ratioDeath = probabilityCell != 0 ? numberDeath / probabilityCell : 0;
         
         return new Pair<Float, Float>(-ratioDeath*log2(ratioDeath) - ratioSurvive*log2(ratioSurvive), probabilityCell);
     }
@@ -222,9 +223,9 @@ public class ID3 {
 
 
     private float log2(float number) {
-      /*  if (number == 0) {
+        if (number == 0) {
                 return number;
-        }*/
+        }
         return (float) Math.log(number) / (float) Math.log(2);
     }
     
