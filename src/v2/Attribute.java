@@ -30,6 +30,10 @@ public class Attribute {
         return connectedProperty;
     }
     
+    public void setTarget(Property prop){
+        connectedProperty = prop;
+    }
+
     public String getName(){
         return name;
     }

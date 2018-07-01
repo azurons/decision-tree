@@ -21,7 +21,8 @@ public class ID3 {
     public Tree tree;
     public Cell[] cellAvailable = {Cell.Empty, Cell.Player, Cell.Smell, Cell.Unknown, Cell.Wind};
     public String[] propertyAvailable = {"up", "right", "bottom", "left"};
-    
+    public ArrayList<String> propertyUsed = new ArrayList<>();
+
     public ID3(Line[] totalFacts){
         this.totalFacts = totalFacts;
         CreateTree();
@@ -39,17 +40,18 @@ public class ID3 {
         int index = PickBestGain(gains);
 
         Property prop = new Property(propertyAvailable[index], index);
+        propertyUsed.add(propertyAvailable[index]);
         for(int i = 0; i < cellAvailable.length; i++){
             prop.addAttribute(new Attribute(cellAvailable[i].toString(), prop));
         }
 
         tree = new Tree(prop);
         
-        CalculateStateOfAttribute(prop);
+        CalculateStateOfAttribute(prop, mainEntropy);
     }
 
 
-    private void CalculateStateOfAttribute(Property prop){
+    private void CalculateStateOfAttribute(Property prop, float mainEnthropy){
         ArrayList<Attribute> attrs = prop.getAttributes();
         for(int i = 0; i < attrs.size(); i++){
             ArrayList<Line> facts = new ArrayList<>();
@@ -75,23 +77,45 @@ public class ID3 {
                 attrs.get(i).setEnd(false);
             }else if(fullSurvive){
                 attrs.get(i).setEnd(true);
+            } else {
+
+                float[] gains = new float[totalFacts[0].surroundings.length];
+                for(int j = 0; j < propertyAvailable.length; j++){
+                    gains[j] = 0; //on initialise le tableau pour évité d'avoir des valeurs random dedans
+                    if(propertyUsed.indexOf(propertyAvailable[j]) == -1){
+                        gains[j] = CalculateGainforProperty(j, cellAvailable, totalFacts, mainEnthropy);
+                    }
+                }
+
+                int index = PickBestGain(gains);
+                
+                Property newProp = new Property(propertyAvailable[index], index);
+                propertyUsed.add(propertyAvailable[index]);
+                for(int j = 0; j < cellAvailable.length; j++){
+                    Attribute attr = new Attribute(cellAvailable[j].toString(), newProp);
+                    newProp.addAttribute(attr);
+                }
+
+                attrs.get(i).setTarget(newProp);
+
+                if(propertyUsed.size() != propertyAvailable.length){
+                    CalculateStateOfAttribute(newProp, mainEnthropy);
+                }
             }
 
-            //to finish
-            //ta l'es facts.
         }
     }
 
     private float CalculateGainforProperty(int index, Cell[] fields, Line[] facts, float mainEnthropie){
-        float[] enthropy = new float[fields.length];
+        float[] entropy = new float[fields.length];
         float[] prevalence = new float[fields.length];
         for(int i = 0; i < fields.length; i++){
             Pair<Float, Float> pair =  CalculateEnthropyForField(index, fields[i], facts);
-            enthropy[i] = pair.getKey();
+            entropy[i] = pair.getKey();
             prevalence[i] =  pair.getValue();
 
         }
-        float gain = ComputeGain(index, mainEnthropie, enthropy, prevalence, facts.length);
+        float gain = ComputeGain(index, mainEnthropie, entropy, prevalence, facts.length);
         return gain;
     }
 
