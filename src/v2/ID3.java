@@ -6,6 +6,7 @@
 package v2;
 
 import javafx.util.Pair;
+import org.w3c.dom.Attr;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,10 +25,38 @@ public class ID3 {
 
     public ID3(Line[] totalFacts){
         this.totalFacts = totalFacts;
+
+        long startTime = System.currentTimeMillis();
+
         CreateTree();
         System.out.println(tree);
+        long endTime = System.currentTimeMillis();
+
+        System.out.println("Decision tree created in " + (endTime - startTime) + " milliseconds");
     }
-    
+
+
+    public float testDecisionAgainstTree(Line line){
+
+        return seekWithinProperty(tree.rootProperty, line);
+    }
+
+
+    private float seekWithinProperty(Property prop, Line line){
+        for(int i = 0; i < prop.getAttributes().size(); i++){
+            if(line.surroundings[prop.getIndex()].toString().equals(prop.getAttributes().get(i).getName())){
+                Property newProp = prop.getAttributes().get(i).getTarget();
+                if(newProp == null){
+                    return prop.getAttributes().get(i).getScore();
+                }else {
+                    return seekWithinProperty(prop.getAttributes().get(i).getTarget(), line);
+                }
+            }
+        }
+
+        System.out.println("Rien trouvé");
+        return -1;
+    }
     
     private void CreateTree(){
         
@@ -105,15 +134,15 @@ public class ID3 {
 
                 attrs.get(i).setTarget(newProp);
 
-                if(propertyUsed.size() != propertyAvailable.length){
-                    CalculateStateOfAttribute(newProp, mainEnthropy, ArrayList<String> newPropertyUsed);
+                if(newPropertyUsed.size() != propertyAvailable.length){
+                    CalculateStateOfAttribute(newProp, mainEnthropy, newPropertyUsed);
                 }
             }
 
         }
     }
 
-    private float CalculateGainforProperty(int index, Cell[] fields, Line[] facts, float mainEnthropie){
+    private float CalculateGainforProperty(int index, Cell[] fields, Line[] facts, float mainEntropy){
         float[] entropy = new float[fields.length];
         float[] prevalence = new float[fields.length];
         for(int i = 0; i < fields.length; i++){
@@ -122,7 +151,7 @@ public class ID3 {
             prevalence[i] =  pair.getValue();
 
         }
-        float gain = ComputeGain(index, mainEnthropie, entropy, prevalence, facts.length);
+        float gain = ComputeGain(index, mainEntropy, entropy, prevalence, facts.length);
         return gain;
     }
 
@@ -134,50 +163,6 @@ public class ID3 {
 
         return gain;
     }
-    
-    /*
-    private float[] CalculateGains(Line[] lines){
-        
-        float[] gains = new float[4];
-        
-        
-        for(int i = 0; i < lines[i].surroundings.length; i++){
-            float enthropyEmpty = CalculateEnthropyForField(i, Cell.Empty);
-            float enthropyPlayer =  CalculateEnthropyForField(i, Cell.Player);
-            float enthropySmell = CalculateEnthropyForField(i, Cell.Smell);
-            float enthropyUnknown = CalculateEnthropyForField(i, Cell.Unknown);
-            float enthropyWind = CalculateEnthropyForField(i, Cell.Wind);
-        
-            float probabilityEmpty = 0;
-            float probabilityPlayer = 0;
-            float probabilitySmell = 0;
-            float probabilityUnknown = 0;
-            float probabilityWind = 0;
-        
-            for(int j = 0 ; j < facts.length; j++){
-                switch(facts[j].surroundings[i]){
-                    case Empty:
-                        probabilityEmpty++;
-                    break;
-                    case Player:
-                        probabilityPlayer++;
-                    break;
-                    case Smell:
-                        probabilitySmell++;
-                    break;
-                    case Unknown:
-                        probabilityUnknown++;
-                    break;
-                    case Wind:
-                        probabilityWind++;
-                }
-            }
-            gains[i] = Enthropy - ((probabilityEmpty/facts.length)*enthropyEmpty) - ((probabilityPlayer/facts.length)*enthropyPlayer) - ((probabilitySmell/facts.length)*enthropySmell) - ((probabilityUnknown/facts.length)*enthropyUnknown) - ((probabilityWind/facts.length)*enthropyWind);                
-
-        }
-        
-        return gains;
-   }*/
 
 
     private Pair<Float, Float> CalculateEnthropyForField(int index, Cell cell, Line[] facts){

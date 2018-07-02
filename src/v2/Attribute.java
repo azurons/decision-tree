@@ -42,4 +42,14 @@ public class Attribute {
         this.survive = survive;
         this.isEnd = true;
     }
+
+    public float getScore(){
+        if(isEnd && survive){
+            return 1;
+        } else if(isEnd && !survive){
+            return 0;
+        }
+
+        return -1;
+    }
 }
