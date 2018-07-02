@@ -21,7 +21,6 @@ public class ID3 {
     public Tree tree;
     public Cell[] cellAvailable = {Cell.Empty, Cell.Player, Cell.Smell, Cell.Unknown, Cell.Wind};
     public String[] propertyAvailable = {"up", "right", "bottom", "left"};
-    public ArrayList<String> propertyUsed = new ArrayList<>();
 
     public ID3(Line[] totalFacts){
         this.totalFacts = totalFacts;
@@ -41,6 +40,7 @@ public class ID3 {
         int index = PickBestGain(gains);
 
         Property prop = new Property(propertyAvailable[index], index);
+        ArrayList<String> propertyUsed = new ArrayList<>();
         propertyUsed.add(propertyAvailable[index]);
         for(int i = 0; i < cellAvailable.length; i++){
             prop.addAttribute(new Attribute(cellAvailable[i].toString(), prop));
@@ -48,11 +48,11 @@ public class ID3 {
 
         tree = new Tree(prop);
         
-        CalculateStateOfAttribute(prop, mainEntropy);
+        CalculateStateOfAttribute(prop, mainEntropy, propertyUsed);
     }
 
 
-    private void CalculateStateOfAttribute(Property prop, float mainEnthropy){
+    private void CalculateStateOfAttribute(Property prop, float mainEnthropy, ArrayList<String> propertyUsed){
         ArrayList<Attribute> attrs = prop.getAttributes();
         for(int i = 0; i < attrs.size(); i++){
             ArrayList<Line> facts = new ArrayList<>();
@@ -90,8 +90,14 @@ public class ID3 {
 
                 int index = PickBestGain(gains);
                 
+                ArrayList<String> newPropertyUsed =  new ArrayList<>();
+
+                for(int j = 0; j < propertyUsed.size(); j++){
+                    newPropertyUsed.add(propertyUsed.get(j));
+                }
+
                 Property newProp = new Property(propertyAvailable[index], index);
-                propertyUsed.add(propertyAvailable[index]);
+                newPropertyUsed.add(propertyAvailable[index]);
                 for(int j = 0; j < cellAvailable.length; j++){
                     Attribute attr = new Attribute(cellAvailable[j].toString(), newProp);
                     newProp.addAttribute(attr);
@@ -100,7 +106,7 @@ public class ID3 {
                 attrs.get(i).setTarget(newProp);
 
                 if(propertyUsed.size() != propertyAvailable.length){
-                    CalculateStateOfAttribute(newProp, mainEnthropy);
+                    CalculateStateOfAttribute(newProp, mainEnthropy, ArrayList<String> newPropertyUsed);
                 }
             }
 
